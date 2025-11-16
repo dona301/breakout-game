@@ -96,43 +96,43 @@ function getHighestScore() {
 
 function drawStartScreen() {
     ctx.fillStyle = "white";
-    ctx.font = "50px Helvetica";
+    ctx.font = "36px Verdana  bold";
     ctx.textAlign = "center";
     ctx.fillText("BREAKOUT", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 30);
 
-    ctx.font = "25px Helvetica";
-    ctx.fillText("Pritisni SPACE", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 20);
+    ctx.font = "18px Verdana";
+    ctx.fillText("Press SPACE to begin", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 20);
 }
 
 function drawGameOverScreen() {
     ctx.fillStyle = "white";
-    ctx.font = "50px Helvetica";
+    ctx.font = "50px Verdana";
     ctx.textAlign = "center";
     ctx.fillText("KRAJ", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 30);
 
-    ctx.font = "25px Helvetica";
+    ctx.font = "25px Verdana";
     ctx.fillText("Pritisni SPACE za ponovni pokušaj!", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 20);
 }
 
 function drawWinScreen() {
     ctx.fillStyle = "white";
-    ctx.font = "50px Helvetica";
+    ctx.font = "50px Verdana";
     ctx.textAlign = "center";
     ctx.fillText("BRAVO!", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 30);
 
-    ctx.font = "25px Helvetica";
+    ctx.font = "25px Verdana";
     ctx.fillText("Pritisni SPACE za ponovni pokušaj!", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 20);
 }
 
-
 function drawScore() {
-    ctx.font = "20px Helvetica";
+    ctx.font = "20px Verdana";
     ctx.fillStyle = "white";
     ctx.textAlign = "left";
-    ctx.fillText("Trenutno: " + score, 20, 20);
+    ctx.textBaseline = "top";
+    ctx.fillText("Score:" + score, 20, 20);
 
     ctx.textAlign = "right";
-    ctx.fillText("Najbolji: " + highScore, CANVAS_WIDTH - 100, 20);
+    ctx.fillText(" High score:" + highScore, CANVAS_WIDTH - 100, 20);
 }
 
 function drawPaddle() {
@@ -157,6 +157,8 @@ function drawBricks() {
             if (brick.visible) {
                 ctx.shadowBlur = 5;
                 ctx.shadowColor = "white";
+                ctx.shadowOffsetX = 2;
+                ctx.shadowOffsetY = 2;
                 ctx.fillStyle = brick.color;
                 ctx.fillRect(brick.x, brick.y, brick.width, brick.height);
             }
@@ -280,30 +282,61 @@ function collisionDetection() {
     for (let row = 0; row < BRICK_ROWS; row++) {
         for (let col = 0; col < BRICK_COLS; col++) {
             const b = bricks[row][col];
-            if (b.visible) {
-                if (ballX + BALL_SIZE > b.x &&
-                    ballX < b.x + b.width &&
-                    ballY + BALL_SIZE > b.y &&
-                    ballY < b.y + b.height) {
+            if (!b.visible) continue;
 
-                    dy = -dy;
-                    b.visible = false;
-                    score++;
-
-                    if (score === BRICK_ROWS * BRICK_COLS) {
-                        gameState = "win";
-                    }
-                }
+            if (
+                ballX + BALL_SIZE < b.x ||
+                ballX > b.x + b.width ||
+                ballY + BALL_SIZE < b.y ||
+                ballY > b.y + b.height
+            ) {
+                continue;
             }
+
+            const overlapLeft = (ballX + BALL_SIZE) - b.x;
+            const overlapRight = (b.x + b.width) - ballX;
+            const overlapTop = (ballY + BALL_SIZE) - b.y;
+            const overlapBottom = (b.y + b.height) - ballY;
+
+            const minOverlap = Math.min(overlapLeft, overlapRight, overlapTop, overlapBottom);
+
+            if (minOverlap === overlapLeft) {
+                dx = -Math.abs(dx);
+            }
+            else if (minOverlap === overlapRight) {
+                dx = Math.abs(dx);
+            }
+            else if (minOverlap === overlapTop) {
+                dy = -Math.abs(dy);
+            }
+            else if (minOverlap === overlapBottom) {
+                dy = Math.abs(dy);
+            }
+
+            if (minOverlap === overlapLeft || minOverlap === overlapRight) {
+                dx *= 1.02;
+            } else {
+                dy *= 1.02;
+            }
+
+            b.visible = false;
+            score++;
+
+            if (score === BRICK_ROWS * BRICK_COLS) {
+                gameState = "win";
+            }
+
+            return;
         }
     }
 }
+
 
 function resetGame() {
     paddleX = (CANVAS_WIDTH - PADDLE_WIDTH) / 2;
     ballX = CANVAS_WIDTH / 2 - BALL_SIZE / 2;
     ballY = CANVAS_HEIGHT - 60 - BALL_SIZE - 5;
-    dx = INITIAL_BALL_SPEED;
+    dx = INITIAL_BALL_SPEED * (Math.random() < 0.5 ? 1 : -1);
     dy = -INITIAL_BALL_SPEED;
     ballLaunched = false;
     initBricks();

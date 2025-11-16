@@ -1,13 +1,13 @@
-body{
+body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
     justify-content: center;
     align-items: center;
-    display: flex;
-    background-color: lightsalmon;
+    background-color: black;
 }
 
 canvas {
-    width: 800px;
-    height: 600px;
     align-content: center;
     background-color: black;
     border: 5px solid white;
