@@ -302,14 +302,18 @@ function updateBall() {
         dy = -dy;
     }
 
-    //kad loptica lupi palicu
+    //loptica lupi palicu
     const paddleY = CANVAS_HEIGHT - 60;
     if (ballY + BALL_SIZE >= paddleY &&
+        ballY < paddleY + PADDLE_HEIGHT &&
         ballX + BALL_SIZE > paddleX &&
-        ballX < paddleX + PADDLE_WIDTH) {
+        ballX < paddleX + PADDLE_WIDTH &&
+        dy > 0) {
+
         dy = -dy;
+
         let hitPoint = (ballX + BALL_SIZE / 2) - (paddleX + PADDLE_WIDTH / 2);
-        dx = hitPoint * 0.05;
+        dx = hitPoint * 0.02;
     }
 
     //kad loptica dotakne donji rub canvasa
@@ -358,9 +362,9 @@ function collisionDetection() {
             }
             //ubrzavanje s obzirom na sudar
             if (minOverlap === overlapLeft || minOverlap === overlapRight) {
-                dx *= 1.05;
+                dx *= 1.02;
             } else {
-                dy *= 1.05;
+                dy *= 1.02;
             }
 
             b.visible = false;
