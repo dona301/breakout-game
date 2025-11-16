@@ -1,5 +1,6 @@
 const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 600;
+
 const BRICK_ROWS = 5;
 const BRICK_COLS = 10;
 const BRICK_WIDTH = 45;
@@ -7,13 +8,6 @@ const BRICK_HEIGHT = 15;
 const BRICK_PADDING_HORIZONTAL = 30;
 const BRICK_PADDING_VERTICAL = 15;
 const BRICK_OFFSET_TOP = 60;
-const PADDLE_WIDTH = 100;
-const PADDLE_HEIGHT = 15;
-const PADDLE_COLOR = "rgb(143,142,142)";
-const BALL_SIZE = 10;
-const INITIAL_BALL_SPEED = 2;
-const PADDLE_SPEED = 4;
-const BALL_COLOR = "rgb(255, 255, 255)";
 const BRICK_COLORS = [
     "rgb(153, 51, 0)",
     "rgb(255, 0, 0)",
@@ -21,6 +15,16 @@ const BRICK_COLORS = [
     "rgb(0, 255, 0)",
     "rgb(255, 255, 153)"
 ];
+
+const PADDLE_WIDTH = 100;
+const PADDLE_HEIGHT = 15;
+const PADDLE_COLOR = "rgb(143,142,142)";
+const PADDLE_SPEED = 4;
+const PADDLE_Y = CANVAS_HEIGHT - 60;
+
+const BALL_SIZE = 10;
+const INITIAL_BALL_SPEED = 2;
+const BALL_COLOR = "rgb(255, 255, 255)";
 
 let canvas, ctx;
 let bricks = [];
@@ -41,16 +45,20 @@ let ballLaunched = false;
 window.onload = function () {
     canvas = document.getElementById("gameCanvas");
     ctx = canvas.getContext("2d");
-    highScore = getHighestScore();
-    drawStartScreen();
-    initBricks();
-    initBall();
-    initPaddle();
+
+    initGame();
+
     document.addEventListener("keydown", handleKeyDown);
     document.addEventListener("keyup", handleKeyUp);
     requestAnimationFrame(gameLoop);
 };
-
+function initGame() {
+    highScore = getHighestScore();
+    drawStartScreen();
+    initBricks();
+    drawPaddle();
+    drawBall();
+}
 function gameLoop() {
     ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
@@ -86,12 +94,8 @@ function gameLoop() {
 }
 
 function getHighestScore() {
-    if(localStorage.getItem("highestScore") == null) {
-        localStorage.setItem("highestScore", "0");
-        return "0"
-    } else {
-        return localStorage.getItem("highestScore");
-    }
+    const stored = localStorage.getItem("highestScore");
+    return stored ? parseInt(stored) : 0;
 }
 
 function drawStartScreen() {
@@ -103,33 +107,24 @@ function drawStartScreen() {
     ctx.textBaseline = "middle";
 
     ctx.font = "bold 36px Verdana";
-    const titleY = CANVAS_HEIGHT / 2;
-    ctx.fillText(titleText, CANVAS_WIDTH / 2, titleY);
+    ctx.fillText(titleText, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
 
     ctx.font = "italic bold 18px Verdana";
-    const subtitleY = titleY + 10 + 18;
-    ctx.fillText(subtitleText, CANVAS_WIDTH / 2, subtitleY);
+    ctx.fillText(subtitleText, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 10 + 18 + 9);
 }
 
-
 function drawGameOverScreen() {
-    ctx.fillStyle = "white";
-    ctx.font = "50px Verdana";
+    ctx.fillStyle = "yellow";
+    ctx.font = "bold 40px Verdana";
     ctx.textAlign = "center";
-    ctx.fillText("KRAJ", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 30);
-
-    ctx.font = "25px Verdana";
-    ctx.fillText("Pritisni SPACE za ponovni pokušaj!", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 20);
+    ctx.fillText("GAME OVER", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 );
 }
 
 function drawWinScreen() {
-    ctx.fillStyle = "white";
-    ctx.font = "50px Verdana";
+    ctx.fillStyle = "yellow";
+    ctx.font = "bold 40px Verdana";
     ctx.textAlign = "center";
-    ctx.fillText("BRAVO!", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 30);
-
-    ctx.font = "25px Verdana";
-    ctx.fillText("Pritisni SPACE za ponovni pokušaj!", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 20);
+    ctx.fillText("YOU WIN!", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
 }
 
 function drawScore() {
@@ -137,25 +132,24 @@ function drawScore() {
     ctx.fillStyle = "white";
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
-    ctx.fillText("Score:" + score, 20, 20);
+    ctx.fillText("Score: " + score, 20, 20);
 
     ctx.textAlign = "right";
-    ctx.fillText(" High score:" + highScore, CANVAS_WIDTH - 100, 20);
+    ctx.fillText(" High score: " + highScore, CANVAS_WIDTH - 100, 20);
 }
 
 function drawPaddle() {
-    const paddleY = CANVAS_HEIGHT - 60;
     ctx.fillStyle = PADDLE_COLOR;
-    ctx.shadowBlur = 5;
-    ctx.shadowColor = "white";
-    ctx.fillRect(paddleX, paddleY, PADDLE_WIDTH, PADDLE_HEIGHT);
+    apply3DShadow();
+    ctx.fillRect(paddleX, PADDLE_Y, PADDLE_WIDTH, PADDLE_HEIGHT);
+    resetShadow();
 }
 
 function drawBall() {
     ctx.fillStyle = BALL_COLOR;
-    ctx.shadowBlur = 5;
-    ctx.shadowColor = "white";
+    apply3DShadow();
     ctx.fillRect(ballX, ballY, BALL_SIZE, BALL_SIZE);
+    resetShadow();
 }
 
 function drawBricks() {
@@ -163,17 +157,28 @@ function drawBricks() {
         for (let col = 0; col < BRICK_COLS; col++) {
             const brick = bricks[row][col];
             if (brick.visible) {
-                ctx.shadowBlur = 5;
-                ctx.shadowColor = "white";
-                ctx.shadowOffsetX = 2;
-                ctx.shadowOffsetY = 2;
+                apply3DShadow();
                 ctx.fillStyle = brick.color;
                 ctx.fillRect(brick.x, brick.y, brick.width, brick.height);
+                resetShadow();
+
             }
         }
     }
 }
 
+function apply3DShadow() {
+    ctx.shadowBlur = 5;
+    ctx.shadowColor = "grey";
+    ctx.shadowOffsetX = 2;
+    ctx.shadowOffsetY = 2;
+}
+
+function resetShadow() {
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+}
 function initBricks() {
     bricks = [];
     const totalBrickWidth = BRICK_COLS * BRICK_WIDTH + (BRICK_COLS - 1) * BRICK_PADDING_HORIZONTAL;
@@ -196,14 +201,6 @@ function initBricks() {
         }
     }
     drawBricks();
-}
-
-function initPaddle() {
-    drawPaddle();
-}
-
-function initBall() {
-    drawBall();
 }
 
 function handleKeyDown(e) {
@@ -338,7 +335,6 @@ function collisionDetection() {
         }
     }
 }
-
 
 function resetGame() {
     paddleX = (CANVAS_WIDTH - PADDLE_WIDTH) / 2;
