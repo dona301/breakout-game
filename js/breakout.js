@@ -1,6 +1,8 @@
+//dimenzije canvasa
 const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 600;
 
+//definiranje izgleda cigli
 const BRICK_ROWS = 5;
 const BRICK_COLS = 10;
 const BRICK_WIDTH = 45;
@@ -16,16 +18,20 @@ const BRICK_COLORS = [
     "rgb(255, 255, 153)"
 ];
 
+//definiranje izgleda palice
 const PADDLE_WIDTH = 100;
 const PADDLE_HEIGHT = 15;
 const PADDLE_COLOR = "rgb(143,142,142)";
 const PADDLE_SPEED = 4;
 const PADDLE_Y = CANVAS_HEIGHT - 60;
 
+//definiranje izgleda loptice
 const BALL_SIZE = 10;
 const INITIAL_BALL_SPEED = 2;
 const BALL_COLOR = "rgb(255, 255, 255)";
 
+
+//pocetne promjenjive varijable
 let canvas, ctx;
 let bricks = [];
 let score = 0;
@@ -42,6 +48,7 @@ let dx = INITIAL_BALL_SPEED * (Math.random() < 0.5 ? 1 : -1);
 let dy = -INITIAL_BALL_SPEED;
 let ballLaunched = false;
 
+//pocetna funkcija
 window.onload = function () {
     canvas = document.getElementById("gameCanvas");
     ctx = canvas.getContext("2d");
@@ -52,6 +59,8 @@ window.onload = function () {
     document.addEventListener("keyup", handleKeyUp);
     requestAnimationFrame(gameLoop);
 };
+
+//pocetni ekran
 function initGame() {
     highScore = getHighestScore();
     drawStartScreen();
@@ -59,6 +68,8 @@ function initGame() {
     drawPaddle();
     drawBall();
 }
+
+//petlja za tok igre sa 4 stanja
 function gameLoop() {
     ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
@@ -93,11 +104,13 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
+//dohvacanje najboljeg rezultata iz localStorage
 function getHighestScore() {
     const stored = localStorage.getItem("highestScore");
     return stored ? parseInt(stored) : 0;
 }
 
+//tekst pocetnog ekrana po smjernicama
 function drawStartScreen() {
     const titleText = "BREAKOUT";
     const subtitleText = "Press SPACE to begin";
@@ -113,6 +126,7 @@ function drawStartScreen() {
     ctx.fillText(subtitleText, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 10 + 18 + 9);
 }
 
+//tekst završnog ekrana nakon gubitka
 function drawGameOverScreen() {
     ctx.fillStyle = "yellow";
     ctx.font = "bold 40px Verdana";
@@ -120,6 +134,7 @@ function drawGameOverScreen() {
     ctx.fillText("GAME OVER", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 );
 }
 
+//tekst završnog ekrana nakon pobjede
 function drawWinScreen() {
     ctx.fillStyle = "yellow";
     ctx.font = "bold 40px Verdana";
@@ -127,6 +142,7 @@ function drawWinScreen() {
     ctx.fillText("YOU WIN!", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
 }
 
+//upis trenutnih bodova i najboljeg rezultata
 function drawScore() {
     ctx.font = "20px Verdana";
     ctx.fillStyle = "white";
@@ -138,6 +154,7 @@ function drawScore() {
     ctx.fillText(" High score: " + highScore, CANVAS_WIDTH - 100, 20);
 }
 
+//crtanje palice
 function drawPaddle() {
     ctx.fillStyle = PADDLE_COLOR;
     apply3DShadow();
@@ -145,6 +162,7 @@ function drawPaddle() {
     resetShadow();
 }
 
+//crtanje loptice
 function drawBall() {
     ctx.fillStyle = BALL_COLOR;
     apply3DShadow();
@@ -152,6 +170,7 @@ function drawBall() {
     resetShadow();
 }
 
+//crtanje cigli
 function drawBricks() {
     for (let row = 0; row < BRICK_ROWS; row++) {
         for (let col = 0; col < BRICK_COLS; col++) {
@@ -167,6 +186,7 @@ function drawBricks() {
     }
 }
 
+//postavljanje sjena za 3d effect
 function apply3DShadow() {
     ctx.shadowBlur = 5;
     ctx.shadowColor = "grey";
@@ -174,11 +194,14 @@ function apply3DShadow() {
     ctx.shadowOffsetY = 2;
 }
 
+//brisanje 3d efekta nakon crtanja
 function resetShadow() {
     ctx.shadowBlur = 0;
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 0;
 }
+
+//odredivanje pozicija cigli
 function initBricks() {
     bricks = [];
     const totalBrickWidth = BRICK_COLS * BRICK_WIDTH + (BRICK_COLS - 1) * BRICK_PADDING_HORIZONTAL;
@@ -203,6 +226,7 @@ function initBricks() {
     drawBricks();
 }
 
+//pracenja unosa s tipkovnice, kretanje s A, D i strelicama, pokretane nove igre sa SPACE
 function handleKeyDown(e) {
     switch (e.code) {
         case "ArrowRight":
@@ -224,6 +248,7 @@ function handleKeyDown(e) {
     }
 }
 
+//pracenje prestanka stisnute tipke
 function handleKeyUp(e) {
     switch (e.code) {
         case "ArrowRight":
@@ -237,6 +262,7 @@ function handleKeyUp(e) {
     }
 }
 
+//pomicanje palice
 function updatePaddle() {
     if (rightPressed && paddleX < CANVAS_WIDTH - PADDLE_WIDTH) {
         paddleX += PADDLE_SPEED;
@@ -245,28 +271,38 @@ function updatePaddle() {
         paddleX -= PADDLE_SPEED;
     }
 }
+
+//pomicanje loptice
 function updateBall() {
+    // dok igra nije pokrenuta, loptica stoji na palici
     if (!ballLaunched) {
         ballX = paddleX + PADDLE_WIDTH / 2 - BALL_SIZE / 2;
         ballY = CANVAS_HEIGHT - 60 - BALL_SIZE - 5;
         return;
     }
+
+    // kretanje loptice nakon lansiranja
     ballX += dx;
     ballY += dy;
 
+    //kad loptica lupi lijevi zid
     if (ballX < 0) {
         ballX = 0;
         dx = -dx;
+
+    //kad loptica lupi desni zid
     } else if (ballX + BALL_SIZE > CANVAS_WIDTH) {
         ballX = CANVAS_WIDTH - BALL_SIZE;
         dx = -dx;
     }
 
+    //kad loptica lupi u gornji dio canvasa
     if (ballY < 0) {
         ballY = 0;
         dy = -dy;
     }
 
+    //kad loptica lupi palicu
     const paddleY = CANVAS_HEIGHT - 60;
     if (ballY + BALL_SIZE >= paddleY &&
         ballX + BALL_SIZE > paddleX &&
@@ -276,6 +312,7 @@ function updateBall() {
         dx = hitPoint * 0.05;
     }
 
+    //kad loptica dotakne donji rub canvasa
     if (ballY + BALL_SIZE > CANVAS_HEIGHT) {
         gameState = "gameover";
     }
@@ -283,11 +320,12 @@ function updateBall() {
     collisionDetection();
 }
 
+//pracenje sudara loptice i cigla
 function collisionDetection() {
     for (let row = 0; row < BRICK_ROWS; row++) {
         for (let col = 0; col < BRICK_COLS; col++) {
             const b = bricks[row][col];
-            if (!b.visible) continue;
+            if (!b.visible) continue; //preskace vec pogodene
 
             if (
                 ballX + BALL_SIZE < b.x ||
@@ -295,9 +333,10 @@ function collisionDetection() {
                 ballY + BALL_SIZE < b.y ||
                 ballY > b.y + b.height
             ) {
-                continue;
+                continue; //preskace ako nije pogodena
             }
 
+            // određivanje na kojoj strani cigle je došlo do sudara
             const overlapLeft = (ballX + BALL_SIZE) - b.x;
             const overlapRight = (b.x + b.width) - ballX;
             const overlapTop = (ballY + BALL_SIZE) - b.y;
@@ -317,18 +356,18 @@ function collisionDetection() {
             else if (minOverlap === overlapBottom) {
                 dy = Math.abs(dy);
             }
-
+            //ubrzavanje s obzirom na sudar
             if (minOverlap === overlapLeft || minOverlap === overlapRight) {
-                dx *= 1.02;
+                dx *= 1.05;
             } else {
-                dy *= 1.02;
+                dy *= 1.05;
             }
 
             b.visible = false;
             score++;
 
             if (score === BRICK_ROWS * BRICK_COLS) {
-                gameState = "win";
+                gameState = "win"; //slusacj pobjede
             }
 
             return;
@@ -336,6 +375,7 @@ function collisionDetection() {
     }
 }
 
+//resetiranje na pocetne varijable
 function resetGame() {
     paddleX = (CANVAS_WIDTH - PADDLE_WIDTH) / 2;
     ballX = CANVAS_WIDTH / 2 - BALL_SIZE / 2;
@@ -348,6 +388,7 @@ function resetGame() {
     gameState = "start";
 }
 
+//spremanje novog najboljeg rezulatata
 function updateHighScore() {
     if (score > highScore) {
         highScore = score;
