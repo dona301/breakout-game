@@ -95,14 +95,22 @@ function getHighestScore() {
 }
 
 function drawStartScreen() {
-    ctx.fillStyle = "white";
-    ctx.font = "36px Verdana  bold";
-    ctx.textAlign = "center";
-    ctx.fillText("BREAKOUT", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 30);
+    const titleText = "BREAKOUT";
+    const subtitleText = "Press SPACE to begin";
 
-    ctx.font = "18px Verdana";
-    ctx.fillText("Press SPACE to begin", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 20);
+    ctx.fillStyle = "white";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    ctx.font = "bold 36px Verdana";
+    const titleY = CANVAS_HEIGHT / 2;
+    ctx.fillText(titleText, CANVAS_WIDTH / 2, titleY);
+
+    ctx.font = "italic bold 18px Verdana";
+    const subtitleY = titleY + 10 + 18;
+    ctx.fillText(subtitleText, CANVAS_WIDTH / 2, subtitleY);
 }
+
 
 function drawGameOverScreen() {
     ctx.fillStyle = "white";
